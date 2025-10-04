@@ -1,115 +1,127 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
-    const width = 960 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+document.addEventListener('DOMContentLoaded', () => {
+    const chartContainer = document.getElementById('chart-container');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const canvas = document.getElementById('myChart');
+    const ctx = canvas.getContext('2d');
 
-    // Function to parse date and value
-    const parseData = d => {
-        d.date = d3.timeParse("%Y-%m-%d")(d.date);
-        d.value = +d.value;
-        return d;
-    };
-
-    // Load data and render charts
-    d3.csv("sample.csv", parseData).then(data => {
-        if (!data || data.length === 0) {
-            console.error("No data loaded or data is empty.");
-            return;
+    /**
+     * Parses CSV text into an array of objects.
+     * Assumes the first row is the header.
+     * @param {string} csvText - The raw CSV string.
+     * @returns {Array<Object>} An array of objects, where each object represents a row.
+     */
+    function parseCsv(csvText) {
+        const lines = csvText.trim().split('\n');
+        if (lines.length === 0) {
+            return [];
         }
 
-        // --- Line Chart ---
-        const svgLine = d3.select("#chart")
-            .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
+        const headers = lines[0].split(',').map(header => header.trim());
+        const data = [];
 
-        // Scales
-        const xScaleLine = d3.scaleTime()
-            .domain(d3.extent(data, d => d.date))
-            .range([0, width]);
-
-        const yScaleLine = d3.scaleLinear()
-            .domain([0, d3.max(data, d => d.value)])
-            .range([height, 0]);
-
-        // Line generator
-        const line = d3.line()
-            .x(d => xScaleLine(d.date))
-            .y(d => yScaleLine(d.value));
-
-        // Add the line path
-        svgLine.append("path")
-            .datum(data)
-            .attr("class", "line")
-            .attr("d", line);
-
-        // Add X axis
-        svgLine.append("g")
-            .attr("class", "x axis")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(xScaleLine));
-
-        // Add Y axis
-        svgLine.append("g")
-            .attr("class", "y axis")
-            .call(d3.axisLeft(yScaleLine));
-
-        // --- Bar Chart ---
-        // Aggregate data by year
-        const annualData = d3.rollup(data,
-            v => d3.sum(v, d => d.value),
-            d => d.date.getFullYear()
-        );
-
-        const barData = Array.from(annualData, ([year, totalValue]) => ({ year: year, value: totalValue }))
-            .sort((a, b) => a.year - b.year); // Sort by year
-
-        if (!barData || barData.length === 0) {
-            console.error("No aggregated data for bar chart.");
-            return;
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(value => value.trim());
+            if (values.length === headers.length) {
+                let row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                data.push(row);
+            }
         }
+        return data;
+    }
 
-        const svgBar = d3.select("#bars")
-            .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
+    /**
+     * Fetches CSV data, parses it, and renders a line chart.
+     */
+    async function loadAndRenderChart() {
+        try {
+            const response = await fetch('sample.csv');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const csvText = await response.text();
+            const parsedData = parseCsv(csvText);
 
-        // Scales for bar chart
-        const xScaleBar = d3.scaleBand()
-            .domain(barData.map(d => d.year))
-            .range([0, width])
-            .padding(0.1);
+            if (parsedData.length === 0) {
+                loadingMessage.textContent = 'No data available to display chart.';
+                return;
+            }
 
-        const yScaleBar = d3.scaleLinear()
-            .domain([0, d3.max(barData, d => d.value)])
-            .range([height, 0]);
+            // Assuming the CSV has 'Date' and 'Value' columns
+            const labels = parsedData.map(row => row.Date);
+            const values = parsedData.map(row => parseFloat(row.Value));
 
-        // Add bars
-        svgBar.selectAll(".bar")
-            .data(barData)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", d => xScaleBar(d.year))
-            .attr("y", d => yScaleBar(d.value))
-            .attr("width", xScaleBar.bandwidth())
-            .attr("height", d => height - yScaleBar(d.value));
+            // Remove loading message
+            loadingMessage.style.display = 'none';
 
-        // Add X axis for bar chart
-        svgBar.append("g")
-            .attr("class", "x axis")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(xScaleBar));
+            // Create the Chart.js line chart
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Value',
+                        data: values,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.3, // Makes the line slightly curved
+                        fill: true,
+                        pointBackgroundColor: 'rgb(75, 192, 192)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(75, 192, 192)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allows chart to fill parent container
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Value Over Time',
+                            font: {
+                                size: 18
+                            },
+                            color: '#333'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            },
+                            grid: {
+                                display: false // Hide x-axis grid lines
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            },
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)' // Light y-axis grid lines
+                            }
+                        }
+                    }
+                }
+            });
 
-        // Add Y axis for bar chart
-        svgBar.append("g")
-            .attr("class", "y axis")
-            .call(d3.axisLeft(yScaleBar));
+        } catch (error) {
+            console.error('Error loading or rendering chart:', error);
+            loadingMessage.textContent = `Failed to load chart data: ${error.message}`;
+            loadingMessage.style.color = 'red';
+        }
+    }
 
-    }).catch(error => {
-        console.error("Error loading or parsing data:", error);
-    });
+    // Call the function to load and render the chart
+    loadAndRenderChart();
 });
