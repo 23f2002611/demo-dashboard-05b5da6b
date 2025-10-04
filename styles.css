@@ -1,4 +1,4 @@
-/* Basic Reset & Body Styling */
+/* General Body Styling */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -7,24 +7,25 @@ body {
     color: #333;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* Align to top for better content flow */
+    align-items: flex-start; /* Align to top */
     min-height: 100vh;
-    padding: 20px;
+    padding-top: 40px; /* Add some space from the top */
     box-sizing: border-box;
 }
 
-/* Dashboard Container */
-.dashboard-container {
+/* Container for the entire dashboard content */
+.container {
     background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     padding: 30px;
-    max-width: 900px;
-    width: 100%;
+    max-width: 1000px;
+    width: 90%;
     text-align: center;
     box-sizing: border-box;
 }
 
+/* Dashboard Title */
 h1 {
     color: #2c3e50;
     margin-bottom: 30px;
@@ -32,52 +33,47 @@ h1 {
     font-weight: 600;
 }
 
-/* Chart Wrapper */
-.chart-wrapper {
-    position: relative;
-    height: 400px; /* Fixed height for the chart */
-    width: 100%;
-    margin: 0 auto 20px auto;
-    background-color: #fdfdfd;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    box-sizing: border-box;
-}
-
-/* Canvas element inside the wrapper */
+/* Chart Container Styling */
 #chart {
-    width: 100% !important; /* Override Chart.js default inline styles */
-    height: 100% !important; /* Override Chart.js default inline styles */
-}
-
-.data-source {
-    font-size: 0.9em;
-    color: #7f8c8d;
-    margin-top: 20px;
+    position: relative;
+    height: 450px; /* Fixed height for the chart area */
+    width: 100%; /* Take full width of its parent container */
+    margin: 0 auto; /* Center the chart within the container */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .dashboard-container {
+    .container {
         padding: 20px;
+        width: 95%;
     }
+
     h1 {
         font-size: 1.8em;
     }
-    .chart-wrapper {
-        height: 300px;
+
+    #chart {
+        height: 350px; /* Adjust height for smaller screens */
+        padding: 15px;
     }
 }
 
 @media (max-width: 480px) {
-    .dashboard-container {
+    .container {
         padding: 15px;
     }
+
     h1 {
         font-size: 1.5em;
     }
-    .chart-wrapper {
-        height: 250px;
+
+    #chart {
+        height: 300px; /* Further adjust height for very small screens */
+        padding: 10px;
     }
 }
