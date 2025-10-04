@@ -1,1 +1,22 @@
-<!doctype html><html><body><h1>Site ready</h1></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js CDN for charting capabilities -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Dashboard Overview</h1>
+        <div class="chart-container">
+            <h2>Data Trend</h2>
+            <canvas id="chart"></canvas>
+            <p id="loading-message">Loading chart data...</p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
