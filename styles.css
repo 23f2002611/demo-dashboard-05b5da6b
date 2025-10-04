@@ -1,122 +1,63 @@
-/* Basic Reset & Body Styling */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start; /* Align to top */
-    min-height: 100vh;
-}
-
-/* Dashboard Container */
-.dashboard-container {
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    font-family: Arial, sans-serif;
     margin: 20px;
-    padding: 25px;
-    width: 90%;
-    max-width: 1200px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
-/* Header Styling */
-.dashboard-header {
+h1 {
     text-align: center;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
+    color: #0056b3;
 }
 
-.dashboard-header h1 {
-    color: #2c3e50;
-    margin: 0;
-    font-size: 2.2em;
-    font-weight: 600;
-}
-
-/* Main Content Area */
-.dashboard-main {
+.chart-container {
     display: flex;
-    flex-direction: column;
-    gap: 20px;
+    flex-wrap: wrap; /* Allows charts to wrap on smaller screens */
+    justify-content: center;
+    gap: 40px; /* Space between charts */
+    margin-top: 30px;
 }
 
-/* Chart Section Styling */
-.chart-section {
-    background-color: #fdfdfd;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
+#line-chart, #bars {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 20px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    width: 450px; /* Fixed width for each chart area */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
-.chart-section h2 {
-    color: #34495e;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.6em;
-    font-weight: 500;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 10px;
-}
-
-/* Chart Container */
-#chart-container {
-    position: relative;
-    height: 400px; /* Fixed height for the chart */
-    width: 100%;
-    margin: auto;
-}
-
-/* Footer Styling */
-.dashboard-footer {
+#line-chart h2, #bars h2 {
     text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    color: #7f8c8d;
-    font-size: 0.9em;
+    color: #007bff;
+    margin-top: 0;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .dashboard-container {
-        margin: 10px;
-        padding: 15px;
-        width: 95%;
-    }
-
-    .dashboard-header h1 {
-        font-size: 1.8em;
-    }
-
-    .chart-section h2 {
-        font-size: 1.4em;
-    }
-
-    #chart-container {
-        height: 300px; /* Adjust height for smaller screens */
-    }
+/* Basic SVG styling for axes and lines */
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #888;
+    shape-rendering: crispEdges;
 }
 
-@media (max-width: 480px) {
-    .dashboard-container {
-        padding: 10px;
-    }
+.axis text {
+    font-family: sans-serif;
+    font-size: 10px;
+    fill: #666;
+}
 
-    .dashboard-header h1 {
-        font-size: 1.5em;
-    }
+.line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+}
 
-    .chart-section h2 {
-        font-size: 1.2em;
-    }
+.bar {
+    fill: #69b3a2;
+}
 
-    #chart-container {
-        height: 250px; /* Further adjust height for very small screens */
-    }
+.bar:hover {
+    fill: #4CAF50;
 }
