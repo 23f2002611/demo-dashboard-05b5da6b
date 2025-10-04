@@ -1,63 +1,83 @@
+/* Basic Reset & Body Styling */
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f4f4f4;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
     color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top for better content flow */
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
 }
 
 h1 {
-    text-align: center;
-    color: #0056b3;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+    font-weight: 600;
 }
 
-.chart-container {
-    display: flex;
-    flex-wrap: wrap; /* Allows charts to wrap on smaller screens */
-    justify-content: center;
-    gap: 40px; /* Space between charts */
-    margin-top: 30px;
-}
-
-#line-chart, #bars {
-    background-color: #fff;
-    border: 1px solid #ddd;
+/* Chart Wrapper */
+.chart-wrapper {
+    position: relative;
+    height: 400px; /* Fixed height for the chart */
+    width: 100%;
+    margin: 0 auto 20px auto;
+    background-color: #fdfdfd;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 20px;
-    width: 450px; /* Fixed width for each chart area */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    padding: 15px;
+    box-sizing: border-box;
 }
 
-#line-chart h2, #bars h2 {
-    text-align: center;
-    color: #007bff;
-    margin-top: 0;
+/* Canvas element inside the wrapper */
+#chart {
+    width: 100% !important; /* Override Chart.js default inline styles */
+    height: 100% !important; /* Override Chart.js default inline styles */
 }
 
-/* Basic SVG styling for axes and lines */
-.axis path,
-.axis line {
-    fill: none;
-    stroke: #888;
-    shape-rendering: crispEdges;
+.data-source {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    margin-top: 20px;
 }
 
-.axis text {
-    font-family: sans-serif;
-    font-size: 10px;
-    fill: #666;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 20px;
+    }
+    h1 {
+        font-size: 1.8em;
+    }
+    .chart-wrapper {
+        height: 300px;
+    }
 }
 
-.line {
-    fill: none;
-    stroke: steelblue;
-    stroke-width: 2px;
-}
-
-.bar {
-    fill: #69b3a2;
-}
-
-.bar:hover {
-    fill: #4CAF50;
+@media (max-width: 480px) {
+    .dashboard-container {
+        padding: 15px;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    .chart-wrapper {
+        height: 250px;
+    }
 }
