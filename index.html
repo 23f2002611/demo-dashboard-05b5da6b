@@ -1,33 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Visualizations</title>
+    <title>Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js CDN for charting capabilities -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Data Visualizations</h1>
-    </header>
+    <div class="dashboard-container">
+        <h1>Data Dashboard</h1>
+        <div id="chart-container" class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+        <p class="loading-message" id="loadingMessage">Loading chart data...</p>
+    </div>
 
-    <main>
-        <section>
-            <h2>Line Chart: Value Over Time</h2>
-            <div id="chart"></div>
-        </section>
-
-        <section>
-            <h2>Bar Chart: Annual Value Summary</h2>
-            <div id="bars"></div>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2023 Data Viz App</p>
-    </footer>
-
-    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
