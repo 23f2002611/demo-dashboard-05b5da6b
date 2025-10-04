@@ -1,1 +1,31 @@
-<!doctype html><html><body><h1>Site ready</h1></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js CDN for charting capabilities -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <h1>Data Dashboard</h1>
+        </header>
+        <main class="dashboard-main">
+            <section class="chart-section">
+                <h2>Trend Analysis</h2>
+                <div id="chart-container">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </section>
+            <!-- Additional dashboard components could go here -->
+        </main>
+        <footer class="dashboard-footer">
+            <p>&copy; 2023 Dashboard. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
