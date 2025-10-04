@@ -1,130 +1,113 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Fetch the CSV data
-    fetch('sample.csv')
-        .then(response => {
+    const chartCanvas = document.getElementById('chart');
+    const loadingMessage = document.getElementById('loading-message');
+    const ctx = chartCanvas.getContext('2d');
+
+    const startTime = performance.now();
+
+    // Function to parse CSV data
+    async function parseCSV(csvText) {
+        const lines = csvText.trim().split('\n');
+        if (lines.length === 0) {
+            throw new Error("CSV data is empty.");
+        }
+
+        const headers = lines[0].split(',').map(header => header.trim());
+        const data = [];
+
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',').map(value => value.trim());
+            if (values.length === headers.length) {
+                const row = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index];
+                });
+                data.push(row);
+            }
+        }
+        return data;
+    }
+
+    // Function to fetch and render chart
+    async function renderChart() {
+        try {
+            const response = await fetch('sample.csv');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            return response.text();
-        })
-        .then(csvText => {
-            const rows = csvText.trim().split('\n');
-            const labels = []; // To store dates
-            const data = [];   // To store values
+            const csvText = await response.text();
+            const data = await parseCSV(csvText);
 
-            // Skip the header row and parse the rest
-            for (let i = 1; i < rows.length; i++) {
-                const [date, value] = rows[i].split(',');
-                labels.push(date); // Dates are in 'YYYY-MM-DD' format
-                data.push(parseFloat(value)); // Convert value to a number
+            // Assuming CSV has 'Date' and 'Value' columns
+            const labels = data.map(row => row.Date);
+            const values = data.map(row => parseFloat(row.Value));
+
+            if (labels.length === 0 || values.length === 0) {
+                throw new Error("No valid data found in CSV for charting.");
             }
 
-            // Get the canvas element
-            const ctx = document.getElementById('myChartCanvas').getContext('2d');
-
-            // Create the Chart.js line chart
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Daily Value',
-                        data: data,
+                        label: 'Sample Data Value',
+                        data: values,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.3, // Smooth the line
-                        fill: false,  // Do not fill the area under the line
-                        pointRadius: 5, // Size of data points
-                        pointBackgroundColor: 'rgb(75, 192, 192)',
-                        pointBorderColor: '#fff',
-                        pointHoverRadius: 7,
-                        pointHoverBackgroundColor: 'rgb(75, 192, 192)',
-                        pointHoverBorderColor: 'rgba(220,220,220,1)'
+                        tension: 0.1,
+                        fill: true
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // Allow chart to fill its container
+                    maintainAspectRatio: false,
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Daily Value Trend Over Time',
+                            text: 'Sample Data Trend Over Time',
                             font: {
-                                size: 18
-                            },
-                            color: '#333'
+                                size: 16
+                            }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                            titleFont: { size: 14 },
-                            bodyFont: { size: 12 },
-                            padding: 10,
-                            cornerRadius: 5
-                        },
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    size: 14
-                                },
-                                color: '#555'
-                            }
                         }
                     },
                     scales: {
                         x: {
-                            type: 'time', // Use 'time' scale for date handling
-                            time: {
-                                unit: 'day',
-                                tooltipFormat: 'MMM D, YYYY', // Format for tooltips
-                                displayFormats: {
-                                    day: 'MMM D' // Format for axis labels
-                                }
-                            },
                             title: {
                                 display: true,
-                                text: 'Date',
-                                font: {
-                                    size: 16
-                                },
-                                color: '#444'
-                            },
-                            ticks: {
-                                color: '#666'
-                            },
-                            grid: {
-                                display: false // Hide vertical grid lines
+                                text: 'Date'
                             }
                         },
                         y: {
-                            beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Value',
-                                font: {
-                                    size: 16
-                                },
-                                color: '#444'
+                                text: 'Value'
                             },
-                            ticks: {
-                                color: '#666'
-                            },
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)' // Light horizontal grid lines
-                            }
+                            beginAtZero: true
                         }
                     }
                 }
             });
-        })
-        .catch(error => {
-            console.error('Error fetching or parsing CSV data:', error);
-            const chartDiv = document.getElementById('chart');
-            if (chartDiv) {
-                chartDiv.innerHTML = '<p style="color: red; text-align: center;">Failed to load chart data. Please check the console for more details.</p>';
+
+            loadingMessage.style.display = 'none'; // Hide loading message
+            const endTime = performance.now();
+            const renderTime = endTime - startTime;
+            console.log(`Chart rendered in ${renderTime.toFixed(2)} ms.`);
+
+            if (renderTime > 15000) { // 15 seconds in milliseconds
+                console.warn(`Chart rendering took longer than 15 seconds: ${renderTime.toFixed(2)} ms.`);
             }
-        });
+
+        } catch (error) {
+            console.error('Error loading or rendering chart:', error);
+            loadingMessage.textContent = `Failed to load chart: ${error.message}`;
+            loadingMessage.style.color = 'red';
+        }
+    }
+
+    renderChart();
 });
