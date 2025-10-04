@@ -1,113 +1,115 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const chartCanvas = document.getElementById('chart');
-    const loadingMessage = document.getElementById('loading-message');
-    const ctx = chartCanvas.getContext('2d');
+document.addEventListener('DOMContentLoaded', function() {
+    const margin = { top: 20, right: 30, bottom: 60, left: 60 };
+    const width = 960 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
 
-    const startTime = performance.now();
+    // Function to parse date and value
+    const parseData = d => {
+        d.date = d3.timeParse("%Y-%m-%d")(d.date);
+        d.value = +d.value;
+        return d;
+    };
 
-    // Function to parse CSV data
-    async function parseCSV(csvText) {
-        const lines = csvText.trim().split('\n');
-        if (lines.length === 0) {
-            throw new Error("CSV data is empty.");
+    // Load data and render charts
+    d3.csv("sample.csv", parseData).then(data => {
+        if (!data || data.length === 0) {
+            console.error("No data loaded or data is empty.");
+            return;
         }
 
-        const headers = lines[0].split(',').map(header => header.trim());
-        const data = [];
+        // --- Line Chart ---
+        const svgLine = d3.select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',').map(value => value.trim());
-            if (values.length === headers.length) {
-                const row = {};
-                headers.forEach((header, index) => {
-                    row[header] = values[index];
-                });
-                data.push(row);
-            }
+        // Scales
+        const xScaleLine = d3.scaleTime()
+            .domain(d3.extent(data, d => d.date))
+            .range([0, width]);
+
+        const yScaleLine = d3.scaleLinear()
+            .domain([0, d3.max(data, d => d.value)])
+            .range([height, 0]);
+
+        // Line generator
+        const line = d3.line()
+            .x(d => xScaleLine(d.date))
+            .y(d => yScaleLine(d.value));
+
+        // Add the line path
+        svgLine.append("path")
+            .datum(data)
+            .attr("class", "line")
+            .attr("d", line);
+
+        // Add X axis
+        svgLine.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(xScaleLine));
+
+        // Add Y axis
+        svgLine.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(yScaleLine));
+
+        // --- Bar Chart ---
+        // Aggregate data by year
+        const annualData = d3.rollup(data,
+            v => d3.sum(v, d => d.value),
+            d => d.date.getFullYear()
+        );
+
+        const barData = Array.from(annualData, ([year, totalValue]) => ({ year: year, value: totalValue }))
+            .sort((a, b) => a.year - b.year); // Sort by year
+
+        if (!barData || barData.length === 0) {
+            console.error("No aggregated data for bar chart.");
+            return;
         }
-        return data;
-    }
 
-    // Function to fetch and render chart
-    async function renderChart() {
-        try {
-            const response = await fetch('sample.csv');
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const csvText = await response.text();
-            const data = await parseCSV(csvText);
+        const svgBar = d3.select("#bars")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
-            // Assuming CSV has 'Date' and 'Value' columns
-            const labels = data.map(row => row.Date);
-            const values = data.map(row => parseFloat(row.Value));
+        // Scales for bar chart
+        const xScaleBar = d3.scaleBand()
+            .domain(barData.map(d => d.year))
+            .range([0, width])
+            .padding(0.1);
 
-            if (labels.length === 0 || values.length === 0) {
-                throw new Error("No valid data found in CSV for charting.");
-            }
+        const yScaleBar = d3.scaleLinear()
+            .domain([0, d3.max(barData, d => d.value)])
+            .range([height, 0]);
 
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sample Data Value',
-                        data: values,
-                        borderColor: 'rgb(75, 192, 192)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        tension: 0.1,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Sample Data Trend Over Time',
-                            font: {
-                                size: 16
-                            }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Date'
-                            }
-                        },
-                        y: {
-                            title: {
-                                display: true,
-                                text: 'Value'
-                            },
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+        // Add bars
+        svgBar.selectAll(".bar")
+            .data(barData)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", d => xScaleBar(d.year))
+            .attr("y", d => yScaleBar(d.value))
+            .attr("width", xScaleBar.bandwidth())
+            .attr("height", d => height - yScaleBar(d.value));
 
-            loadingMessage.style.display = 'none'; // Hide loading message
-            const endTime = performance.now();
-            const renderTime = endTime - startTime;
-            console.log(`Chart rendered in ${renderTime.toFixed(2)} ms.`);
+        // Add X axis for bar chart
+        svgBar.append("g")
+            .attr("class", "x axis")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(xScaleBar));
 
-            if (renderTime > 15000) { // 15 seconds in milliseconds
-                console.warn(`Chart rendering took longer than 15 seconds: ${renderTime.toFixed(2)} ms.`);
-            }
+        // Add Y axis for bar chart
+        svgBar.append("g")
+            .attr("class", "y axis")
+            .call(d3.axisLeft(yScaleBar));
 
-        } catch (error) {
-            console.error('Error loading or rendering chart:', error);
-            loadingMessage.textContent = `Failed to load chart: ${error.message}`;
-            loadingMessage.style.color = 'red';
-        }
-    }
-
-    renderChart();
+    }).catch(error => {
+        console.error("Error loading or parsing data:", error);
+    });
 });
