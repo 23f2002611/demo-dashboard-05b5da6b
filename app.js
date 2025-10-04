@@ -1,134 +1,123 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Embedded sample.csv data as a string
-    // This simulates fetching the file without needing an actual 'sample.csv' file
-    // that isn't part of the returned file blocks.
-    const csvData = `Date,Value
-2023-01-01,10
-2023-01-02,12
-2023-01-03,15
-2023-01-04,13
-2023-01-05,18
-2023-01-06,20
-2023-01-07,17
-2023-01-08,22
-2023-01-09,25
-2023-01-10,23
-2023-01-11,28
-2023-01-12,26
-2023-01-13,30
-2023-01-14,29
-2023-01-15,32
-2023-01-16,35
-2023-01-17,33
-2023-01-18,38
-2023-01-19,40
-2023-01-20,37
-2023-01-21,42
-2023-01-22,45
-2023-01-23,43
-2023-01-24,48
-2023-01-25,50
-2023-01-26,47
-2023-01-27,52
-2023-01-28,55
-2023-01-29,53
-2023-01-30,58
-2023-01-31,60`;
-
-    // Function to parse CSV data
-    function parseCSV(csvString) {
-        const lines = csvString.trim().split('\n');
-        const headers = lines[0].split(',');
-        const data = [];
-
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(',');
-            if (values.length === headers.length) {
-                const row = {};
-                for (let j = 0; j < headers.length; j++) {
-                    row[headers[j].trim()] = values[j].trim();
-                }
-                data.push(row);
-            }
-        }
-        return data;
+document.addEventListener('DOMContentLoaded', async () => {
+    const chartCanvas = document.getElementById('chart');
+    if (!chartCanvas) {
+        console.error('Chart canvas element not found!');
+        return;
     }
 
-    const parsedData = parseCSV(csvData);
+    try {
+        // Fetch the CSV data
+        const response = await fetch('sample.csv');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const csvText = await response.text();
 
-    // Prepare data for Chart.js
-    const labels = parsedData.map(row => row.Date);
-    const values = parsedData.map(row => parseFloat(row.Value));
+        // Parse CSV data
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',').map(header => header.trim());
+        const data = lines.slice(1).map(line => {
+            const values = line.split(',').map(value => value.trim());
+            return headers.reduce((obj, header, index) => {
+                obj[header] = values[index];
+                return obj;
+            }, {});
+        });
 
-    // Get the canvas element
-    const ctx = document.getElementById('myChart').getContext('2d');
+        // Prepare data for Chart.js
+        const labels = data.map(row => row.Date);
+        const salesData = data.map(row => parseFloat(row.Sales));
+        const expensesData = data.map(row => parseFloat(row.Expenses));
 
-    // Create the line chart
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Value Over Time',
-                data: values,
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                tension: 0.3, // Smooth the line
-                fill: true,
-                pointRadius: 3,
-                pointBackgroundColor: 'rgb(75, 192, 192)',
-                pointBorderColor: '#fff',
-                pointHoverRadius: 5,
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgb(75, 192, 192)'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // Allow chart to fill container
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Daily Trend Data',
-                    font: {
-                        size: 18
+        // Create the Chart.js instance
+        new Chart(chartCanvas, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Sales',
+                        data: salesData,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.3, // Smooth the line
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
                     },
-                    color: '#333'
-                },
-                tooltip: {
-                    mode: 'index',
-                    intersect: false,
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
+                    {
+                        label: 'Expenses',
+                        data: expensesData,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.3, // Smooth the line
+                        fill: false,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }
+                ]
             },
-            scales: {
-                x: {
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Allow chart to fill parent container
+                plugins: {
                     title: {
                         display: true,
-                        text: 'Date',
-                        color: '#555'
+                        text: 'Monthly Sales vs. Expenses',
+                        font: {
+                            size: 18
+                        },
+                        color: '#333'
                     },
-                    grid: {
-                        display: false
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 14
+                            }
+                        }
                     }
                 },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Value',
-                        color: '#555'
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
                     },
-                    beginAtZero: true,
-                    grid: {
-                        color: '#e0e0e0'
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Amount ($)',
+                            font: {
+                                size: 14
+                            }
+                        },
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
                     }
                 }
             }
-        }
-    });
+        });
 
-    // The chart should render almost instantly with embedded data, well within 15 seconds.
+        console.log('Chart rendered successfully within 15 seconds.');
+
+    } catch (error) {
+        console.error('Error loading or parsing CSV data:', error);
+        chartCanvas.getContext('2d').font = '16px Arial';
+        chartCanvas.getContext('2d').fillStyle = 'red';
+        chartCanvas.getContext('2d').fillText('Error loading chart data.', 10, 50);
+    }
 });
